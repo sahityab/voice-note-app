@@ -9,7 +9,7 @@ import tempfile
 tokenizer = AutoTokenizer.from_pretrained("sshleifer/distilbart-cnn-12-6")
 model = AutoModelForSeq2SeqLM.from_pretrained("sshleifer/distilbart-cnn-12-6")
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-whisper_model = whisper.load_model("base")
+whisper_model = whisper.load_model("medium")
 
 def summarize(text):
     inputs = tokenizer([text], max_length=1024, return_tensors="pt", truncation=True)
@@ -24,13 +24,16 @@ def detect_reminder(text):
     return None
 
 def process_note(text):
+    reminder_info = detect_reminder(text)
+
     return {
-        "id": datetime.utcnow().isoformat(),
-        "text": text,
+        "original_text": text,
         "summary": summarize(text),
         "timestamp": datetime.utcnow().isoformat(),
         "group": detect_group(text),
-        "reminder_time": detect_reminder(text)["time"] if detect_reminder(text) else None
+        "is_reminder": bool(reminder_info),
+        "device_id": "demo-device-uuid",   # Replace with real UUID later
+        "user_id": "unknown"
     }
 
 def detect_group(text):

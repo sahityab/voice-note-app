@@ -9,7 +9,18 @@ def register_routes(app):
     @cross_origin(origins="*")
     def add_note():
         data = request.json
+
+        print("[DEBUG] Incoming data:", data)  # Add this line
+
+        # You can also check if required fields are missing
+        if not data or 'text' not in data:
+             print("[DEBUG] Missing text in request!")
+             return jsonify({"status": "error", "reason": "Missing text field"}), 400
+
+
         result = process_note(data.get("text"))
+
+        print("[DEBUG] Constructed note to save:", result)
         save_note(result)
         return jsonify(result)
 
