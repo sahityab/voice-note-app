@@ -3,13 +3,25 @@ from flask_cors import CORS, cross_origin
 from logic import process_note
 from logic import transcribe_audio as run_transcription
 from db import save_note, get_all_notes, get_all_groups
+import logging
 
 def register_routes(app):
     @app.route("/add_note", methods=["POST"])
     @cross_origin(origins="*")
     def add_note():
         data = request.json
+
+        logging.debug("Incoming data: %s", data)  # Add this line
+
+        # You can also check if required fields are missing
+        if not data or 'text' not in data:
+             logging.debug(" Missing text in request!")
+             return jsonify({"status": "error", "reason": "Missing text field"}), 400
+
+
         result = process_note(data.get("text"))
+
+        logging.debug("Constructed note to save: %s", result)
         save_note(result)
         return jsonify(result)
 
