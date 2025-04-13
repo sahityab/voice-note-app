@@ -1,3 +1,4 @@
+import logging
 from flask import request, jsonify
 from flask_cors import CORS, cross_origin
 from logic import process_note
@@ -11,13 +12,12 @@ def register_routes(app):
     def add_note():
         data = request.json
 
-        logging.debug("Incoming data: %s", data)  # Add this line
+        logging.debug("Incoming data: %s", data)  
 
-        # You can also check if required fields are missing
+        # check if required fields are missing
         if not data or 'text' not in data:
              logging.debug(" Missing text in request!")
              return jsonify({"status": "error", "reason": "Missing text field"}), 400
-
 
         result = process_note(data.get("text"))
 
