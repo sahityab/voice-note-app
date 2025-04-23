@@ -28,7 +28,28 @@ def register_routes(app):
     @app.route("/notes", methods=["GET"])
     @cross_origin(origins="*")
     def get_notes():
-        return jsonify(get_all_notes())
+        try:
+            records = get_all_notes()   # make sure this is imported or defined above
+            notes = []
+            for r in records:
+                # adjust these keys to match your record shape
+                summary   = r['summary']
+                timestamp = r['timestamp']
+                group     = r['group']
+                # if timestamp is a datetime, convert it:
+                if not isinstance(timestamp, str):
+                    timestamp = timestamp.isoformat()
+                notes.append({
+                    'summary': summary,
+                    'timestamp': timestamp,
+                    'group': group,
+                })
+            return jsonify(notes)
+        except Exception as e:
+            app.logger.exception("Error in /get_notes")
+            # return the error back so you can see it in the browser
+            return jsonify({ 'error': str(e) }), 500
+
 
     @app.route("/groups", methods=["GET"])
     @cross_origin(origins="*")
