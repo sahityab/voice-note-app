@@ -15,8 +15,14 @@ def save_note(note):
     except Exception as e:
         logging.error("Failed to insert note: %s", str(e))
 
-def get_all_notes():
-    return client.records().get_all("notes")
+def get_all_notes(page_size: int = 100):
+    response = client.data().query("notes", {
+        "sort": { "xata_createdat": "desc" }, 
+        "page": {"size": page_size}
+        })
+    return response["records"]
 
 def get_all_groups():
-    return client.records().get_all("groups")
+    response = client.data().query("groups", {"page": {"size": 100}})
+    return response["records"]
+    

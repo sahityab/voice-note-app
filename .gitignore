@@ -67,3 +67,8 @@ Thumbs.db
 # ===== Other =====
 *.bak
 *.tmp
+
+# ===== Xata DB =====
+*.xata/
+*.xatarc
+
