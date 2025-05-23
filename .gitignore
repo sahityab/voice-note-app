@@ -23,6 +23,8 @@ env/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+.flutter-plugins 2
+.flutter-plugins-dependencies 2
 .packages
 .pub-cache/
 .pub/
@@ -34,6 +36,7 @@ windows/flutter/ephemeral/
 android/.gradle/
 android/app/build/
 *.iml
+
 
 # Flutter Firebase / Push Notification Files
 firebase.json
