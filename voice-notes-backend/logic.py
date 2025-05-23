@@ -112,59 +112,42 @@ def process_text(text):
         summary = punctuated_text  # No summarization, just return cleaned text
     elif token_count < 30:
         # Adjust prompt and summarizer settings for short input
-        prompt_text = f"Rephrase the following text clearly and consisely:\n{punctuated_text}"
+        """  prompt_text = f"Rephrase the following text clearly and consisely:\n{punctuated_text}"
         inputs = bart_tokenizer([prompt_text], max_length=256, return_tensors="pt", truncation=True).to(device)
         summary_ids = bart_model.generate(inputs["input_ids"], max_length=50, min_length=5, length_penalty=2.0, num_beams=4)
         summary_text = bart_tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-        summary = bullet_format(summary_text)  # Always bullet format at the end
+        summary = bullet_format(summary_text)  # Always bullet format at the end """
+       
+        summary_text = summarize_with_parm2(punctuated_text, 2)
+        summary = bullet_format(summary_text)
     elif token_count < 1024:
         # Use Pegasus for medium inputs
         #prompt_text = f"Summarize the following text into concise multiple bullet points that capture the key ideas clearly and briefly:\n\n{punctuated_text}"
         #inputs = flan_tokenizer(prompt_text, max_length=1024, return_tensors="pt", truncation=True).to(device)
         #summary_ids = flan_model.generate(inputs["input_ids"], max_length=150, min_length=20, length_penalty=2.0, num_beams=4, no_repeat_ngram_size=3)
         #summary_text = flan_tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-        summary_text = summarize_with_parm2(punctuated_text)
+
+        summary_text = summarize_with_parm2(punctuated_text, 3)
         summary = bullet_format(summary_text)
     else:
-        # Use LED for longer inputs
-        prompt_text = f"Summarize the following text into bullet points:\n{punctuated_text}"
-        inputs = led_tokenizer(
-            prompt_text,
-            return_tensors="pt",
-            max_length=16384,
-            truncation=True
-        ).to(device)
-
-        global_attention_mask = torch.zeros_like(inputs["input_ids"])
-        global_attention_mask[:, 0] = 1  # Set global attention on <s> token
-
-        summary_ids = led_model.generate(
-            input_ids=inputs["input_ids"],
-            attention_mask=inputs["attention_mask"],
-            global_attention_mask=global_attention_mask,
-            max_length=512,
-            min_length=100,
-            length_penalty=2.0,
-            num_beams=4
-        )
-        summary_text = led_tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+        summary_text = summarize_with_parm2(punctuated_text, 6)
         summary = bullet_format(summary_text)
 
     return summary
     
-def summarize_with_parm2(note_text):
+def summarize_with_parm2(note_text, num_of_bullets):
     """   prompt = (
         "Summarize the following text into a few concise key points in simple words "
-        "(preferably 3-4), without any additional metadata:\n\n"
+        "(preferably {num_of_bullets}), without any additional metadata:\n\n"
         f"{note_text}"
     ) """
     system_prompt = """<|im_start|>system
-    You are an AI assistant that summarizes notes into exactly 3–4 concise bullet points,
+    You are an AI assistant that summarizes notes into exactly {num_of_bullets} concise bullet points,
     capturing the most critical information, and nothing else.
     <|im_end|>"""
 
     user_prompt = f"""<|im_start|>user
-    Summarize this note into 3–4 bullet points, no extra commentary:
+    Summarize this note into {num_of_bullets} bullet points, no extra commentary:
     {note_text}
     <|im_end|><|im_start|>assistant
     """
