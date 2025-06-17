@@ -7,6 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http_parser/http_parser.dart';
+import 'theme/app_colors.dart';
+import 'theme/app_text_styles.dart';
 
 class JotItDownPage extends StatefulWidget {
   @override
@@ -54,11 +56,11 @@ class _JotItDownPageState extends State<JotItDownPage> {
   }
 
   Future<void> _toggleRecording() async {
-  // Create a unique filename with timestamp
-  final cacheDir = await getTemporaryDirectory();
-   _currentRecordingPath = '${cacheDir.path}/recording_$_currentTimestamp.wav';
-  final fileUri = Uri.file(_currentRecordingPath!).toString();
-  
+    // Create a unique filename with timestamp
+    final cacheDir = await getTemporaryDirectory();
+    _currentRecordingPath = '${cacheDir.path}/recording_$_currentTimestamp.wav';
+    final fileUri = Uri.file(_currentRecordingPath!).toString();
+    
     if (!_isRecording) {
       // START RECORDING
       if (await _recorder.hasPermission()) {
@@ -160,7 +162,6 @@ class _JotItDownPageState extends State<JotItDownPage> {
         await file.delete();
         _currentRecordingPath = null;
         
-        
       } catch (e) {
         setState(() => _status = 'Error: $e');
         print('Transcription/upload error: $e');
@@ -171,10 +172,9 @@ class _JotItDownPageState extends State<JotItDownPage> {
     }
   }
 
-
   void _animateText(String text) {
     _timer?.cancel();
-    _words    = text.split(' ');
+    _words = text.split(' ');
     _wordIndex = 0;
     setState(() => _animatedText = '');
 
@@ -198,9 +198,36 @@ class _JotItDownPageState extends State<JotItDownPage> {
   }
 
   @override
-  Widget build(BuildContext ctx) {
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Jot It Down')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        toolbarHeight: 80,
+        title: Text(
+          'JotitDown',
+          style: AppTextStyles.logo,
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            child: IconButton(
+              icon: const Icon(Icons.settings_outlined),
+              iconSize: 24,
+              color: AppColors.textSecondary,
+              onPressed: () {
+                // TODO: Navigate to settings
+              },
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shape: const CircleBorder(),
+                padding: const EdgeInsets.all(8),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         child: Column(
