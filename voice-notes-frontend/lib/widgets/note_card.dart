@@ -24,20 +24,32 @@ class NoteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: AppDecorations.noteCard,
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            offset: const Offset(0, 2),
+            blurRadius: 8,
+            spreadRadius: 0,
+          ),
+        ],
+      ),
       child: Material(
         color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           child: Padding(
-            padding: AppSpacing.cardPadding,
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeader(),
-                AppSpacing.gap8,
+                const SizedBox(height: 12),
                 _buildFooter(),
               ],
             ),
@@ -54,37 +66,37 @@ class NoteCard extends StatelessWidget {
         Expanded(
           child: Text(
             summary,
-            style: AppTextStyles.noteText,
+            style: AppTextStyles.body1.copyWith(
+              color: AppColors.textPrimary,
+              height: 1.4,
+            ),
           ),
         ),
-        AppSpacing.hGap8,
-        _buildActions(),
-      ],
-    );
-  }
-
-  Widget _buildActions() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (hasReminder) ...[
-          Icon(
-            Icons.alarm,
-            size: 16,
-            color: AppColors.primary,
-          ),
-          AppSpacing.hGap4,
-        ],
-        IconButton(
-          icon: const Icon(Icons.more_vert),
-          iconSize: 16,
-          color: AppColors.textLight,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(
-            minWidth: 24,
-            minHeight: 24,
-          ),
-          onPressed: onMoreTap,
+        const SizedBox(width: 12),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasReminder) ...[
+              Icon(
+                Icons.alarm_outlined,
+                size: 18,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: 8),
+            ],
+            SizedBox(
+              width: 32,
+              height: 32,
+              child: IconButton(
+                icon: const Icon(Icons.more_vert),
+                iconSize: 18,
+                color: AppColors.textLight,
+                padding: EdgeInsets.zero,
+                onPressed: onMoreTap,
+                splashRadius: 16,
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -93,11 +105,29 @@ class NoteCard extends StatelessWidget {
   Widget _buildFooter() {
     return Row(
       children: [
-        Text(timestamp, style: AppTextStyles.timestamp),
-        AppSpacing.hGap4,
-        Text('•', style: AppTextStyles.timestamp),
-        AppSpacing.hGap4,
-        Text(group, style: AppTextStyles.category),
+        Text(
+          timestamp,
+          style: AppTextStyles.label3.copyWith(
+            color: AppColors.textLight,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Container(
+          width: 3,
+          height: 3,
+          decoration: BoxDecoration(
+            color: AppColors.divider,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          group,
+          style: AppTextStyles.label3.copyWith(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }

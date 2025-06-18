@@ -9,6 +9,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:http_parser/http_parser.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_text_styles.dart';
+import 'theme/app_decorations.dart';
+import 'widgets/voice_record_button.dart';
+import 'widgets/recording_status.dart';
+import 'widgets/note_card.dart';
 
 class JotItDownPage extends StatefulWidget {
   @override
@@ -197,6 +201,32 @@ class _JotItDownPageState extends State<JotItDownPage> {
     super.dispose();
   }
 
+  String _formatTimestamp(String timestamp) {
+    try {
+      final dateTime = DateTime.parse(timestamp);
+      final now = DateTime.now();
+      final difference = now.difference(dateTime);
+
+      if (difference.inDays == 0) {
+        if (difference.inHours == 0) {
+          if (difference.inMinutes == 0) {
+            return 'Just now';
+          }
+          return '${difference.inMinutes}m ago';
+        }
+        return '${difference.inHours}h ago';
+      } else if (difference.inDays == 1) {
+        return 'Yesterday';
+      } else if (difference.inDays < 7) {
+        return '${difference.inDays} days ago';
+      } else {
+        return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+      }
+    } catch (e) {
+      return timestamp;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -229,64 +259,119 @@ class _JotItDownPageState extends State<JotItDownPage> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // RECORD BUTTON + STATUS
-            ElevatedButton(
+            const SizedBox(height: 32),
+            // VOICE RECORD BUTTON
+            VoiceRecordButton(
+              isRecording: _isRecording,
               onPressed: _toggleRecording,
-              child: Text(_isRecording ? 'Stop Recording' : 'Start Recording'),
             ),
-            SizedBox(height: 8),
-            Text(_status, style: TextStyle(color: Colors.grey)),
-            SizedBox(height: 24),
+            const SizedBox(height: 16),
+            // STATUS
+            Center(
+              child: RecordingStatus(
+                status: _status,
+                isRecording: _isRecording,
+              ),
+            ),
+            const SizedBox(height: 48),
             // ANIMATED TRANSCRIPT
             if (_animatedText.isNotEmpty) ...[
-              Text(_animatedText, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-              SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  _animatedText,
+                  style: AppTextStyles.body1.copyWith(
+                    fontWeight: FontWeight.w500,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
             ],
             // SAVED SUMMARY
             if (_summary.isNotEmpty) ...[
               Container(
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  border: Border(left: BorderSide(color: Colors.blue, width: 4)),
-                  borderRadius: BorderRadius.circular(4),
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border(
+                    left: BorderSide(
+                      color: AppColors.primary,
+                      width: 4,
+                    ),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      offset: const Offset(0, 2),
+                      blurRadius: 8,
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Summary:', style: TextStyle(color: Colors.grey[700])),
-                    Text(_summary, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 4),
-                    Text('Group: $_group', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.blue)),
+                    Text(
+                      'Summary:',
+                      style: AppTextStyles.label2.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _summary,
+                      style: AppTextStyles.body1.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Group: $_group',
+                      style: AppTextStyles.label3.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 32),
+            ],
+            // NOTES HEADER
+            if (_notes.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(
+                  'Your Notes',
+                  style: AppTextStyles.heading3,
+                ),
+              ),
             ],
             // EXISTING NOTES
-            ..._notes.map((n) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Container(
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  border: Border(left: BorderSide(color: Colors.blue, width: 4)),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(n.summary, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                    SizedBox(height: 4),
-                    Text(n.timestamp, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                    Text(n.group, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal)),
-                  ],
-                ),
-              ),
+            ..._notes.map((note) => NoteCard(
+              summary: note.summary,
+              timestamp: _formatTimestamp(note.timestamp),
+              group: note.group,
+              hasReminder: false, // You can add this to your Note model later
+              onTap: () {
+                // TODO: Handle note tap
+              },
+              onMoreTap: () {
+                // TODO: Show note options
+              },
             )),
           ],
         ),
